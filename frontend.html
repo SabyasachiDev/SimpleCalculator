@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Number Operations</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #5b8fc3, #3a6da8);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 800px;
+            overflow: hidden;
+        }
+        .cube, .cube2 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            height: 500px;
+            transform-style: preserve-3d;
+            margin: -250px 0 0 -250px;
+        }
+        .cube {
+            animation: rotate 20s infinite linear;
+        }
+        .cube2 {
+            animation: rotate-rev 25s infinite linear;
+        }
+        .cube div, .cube2 div {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        .cube .front  { transform: translateZ(100px); }
+        .cube .back   { transform: rotateY(180deg) translateZ(100px); }
+        .cube .right  { transform: rotateY(90deg) translateZ(100px); }
+        .cube .left   { transform: rotateY(-90deg) translateZ(100px); }
+        .cube .top    { transform: rotateX(90deg) translateZ(100px); }
+        .cube .bottom { transform: rotateX(-90deg) translateZ(100px); }
+        @keyframes rotate {
+            from { transform: rotateX(0deg) rotateY(0deg); }
+            to   { transform: rotateX(360deg) rotateY(360deg); }
+        }
+        @keyframes rotate-rev {
+            from { transform: rotateX(360deg) rotateY(360deg); }
+            to   { transform: rotateX(0deg) rotateY(0deg); }
+        }
+        .container {
+            background: #c7c3c3;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 320px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .title {
+            font-style: italic;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            animation: colorchange 10s infinite;
+        }
+        @keyframes colorchange {
+            0%   { color: #ff3b3b; }
+            25%  { color: #ffb830; }
+            50%  { color: #3bff3b; }
+            75%  { color: #305eff; }
+            100% { color: #ff3b3b; }
+        }
+        h1 {
+            margin-top: 0;
+            color: #282727;
+        }
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #241919;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            background: #0078d4;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        #result {
+            margin-top: 16px;
+            font-weight: bold;
+            color: #0078d4;
+        }
+    </style>
+</head>
+<body>
+<div class="cube">
+    <div class="front"></div>
+    <div class="back"></div>
+    <div class="right"></div>
+    <div class="left"></div>
+    <div class="top"></div>
+    <div class="bottom"></div>
+</div>
+<div class="cube2">
+    <div class="front"></div>
+    <div class="back"></div>
+    <div class="right"></div>
+    <div class="left"></div>
+    <div class="top"></div>
+    <div class="bottom"></div>
+</div>
+<div class="container">
+    <div class="title">My Calculator</div>
+    <h1>Number Operations</h1>
+    <label>Numbers (comma separated):
+        <input id="nums" type="text" placeholder="e.g. 1,2,3" />
+    </label>
+    <label>Operation:
+        <select id="op">
+            <option value="sum">Sum</option>
+            <option value="subtract">Sequential subtraction</option>
+            <option value="product">Product</option>
+            <option value="average">Average</option>
+        </select>
+    </label>
+    <button id="calc">Calculate</button>
+    <div id="result"></div>
+    <p style="font-size:0.8rem;color:#444;margin-top:20px;">Powered by simple Java backend</p>
+</div>
+
+<script>
+    const calcBtn = document.getElementById('calc');
+    const resultDiv = document.getElementById('result');
+    function setLoading(loading) {
+        calcBtn.disabled = loading;
+        calcBtn.textContent = loading ? 'Calculating...' : 'Calculate';
+    }
+
+    calcBtn.addEventListener('click', function () {
+        const nums = document.getElementById('nums').value;
+        const op = document.getElementById('op').value;
+        resultDiv.textContent = '';
+        setLoading(true);
+        fetch(`/calculate?nums=${encodeURIComponent(nums)}&op=${encodeURIComponent(op)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.result !== undefined) {
+                    resultDiv.textContent = 'Result: ' + data.result;
+                } else {
+                    resultDiv.textContent = 'Error: ' + data.error;
+                }
+            })
+            .catch(err => {
+                resultDiv.textContent = 'Fetch error: ' + err;
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    });
+</script>
+</body>
+</html>
